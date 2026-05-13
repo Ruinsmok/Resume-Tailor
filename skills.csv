@@ -1,0 +1,21 @@
+category,skill,evidence,level
+Languages,Python,"algorithmic trading (IMC Prosperity), ML inference (SlopFilter)",proficient
+Languages,C,"Extensive use in course CS146",proficient
+Languages,Java,"Origami Pattern Designer data structures",proficient
+Languages,JavaScript,"Browser extension dev (SlopFilter)",intermediate
+Languages,HTML&CSS,"Web content filter and extract (SlopFilter)",intermediate
+Frameworks,PyTorch,"trained slop detection model in SlopFilter",intermediate
+Frameworks,ONNX,"real-time video thumbnail inference in SlopFilter",basic
+Concepts,Formal Proof,"Formalization of Elementary Number Theory",intermediate
+Concepts,Algorithm Design,"arbitrage, EMA, mean-reversion strategies", intermediate
+Platforms,Microsoft Azure,"self-study via Microsoft Learn and coursework",familiar
+Tools,VSCode,"Main IDE for most projects",proficient
+Tools,Excel,"daily use for arrangements and statistics",intermediate
+Tools,Git,"used across all projects",intermediate
+Tools,Claude Code,"Project plannings and workflow design",proficient
+Communication,Mandarin Chinese,"Native Level",advanced
+Communication,French,"daily usage level",intermediate
+Communication,Teamworking,"Group project (IMC Prosperity)",proficient
+Communication,Teaching,"Tutoring and Peer Mentor",advanced
+Communication,Interpersonal Communication,"Group project (IMC Prosperity), Tutoring and Peer Mentor",proficient
+
