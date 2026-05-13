@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import csv
 import json
-import os
 import re
 import shutil
 import subprocess
@@ -13,13 +12,22 @@ import anthropic
 import pdfplumber
 
 JOBS_DIR = Path("jobs")
+
+
+def first_text(resp):
+    for block in resp.content:
+        if block.type == "text":
+            return block.text.strip()
+    raise ValueError(f"No text block in response. Block types: {[b.type for b in resp.content]}")
+
 OUTPUT_DIR = Path("output")
 TEX_DIR = Path("tex")
 SKILLS_CSV = Path("skills.csv")
 MASTER_CV = Path("CV.tex")
 
-MODEL = "deepseek-chat"
-DEEPSEEK_BASE_URL = "https://api.deepseek.com"
+#do not change current model name or URL
+MODEL = "deepseek-v4-pro"
+DEEPSEEK_BASE_URL = "https://api.deepseek.com/anthropic"
 
 
 def get_newest_pdf():
@@ -33,27 +41,27 @@ def get_newest_pdf():
 
 def extract_pdf_text(pdf_path):
     with pdfplumber.open(pdf_path) as pdf:
-        return "\n".join(page.extract_text() or "" for page in pdf.pages)
+        text = "\n".join(page.extract_text() or "" for page in pdf.pages)
+    idx = text.find("Job Posting Information")
+    return text[idx:] if idx != -1 else text[:4000]
 
 
 def extract_job_data(client, text):
     resp = client.messages.create(
         model=MODEL,
-        max_tokens=1024,
+        max_tokens=4096,
         messages=[{
             "role": "user",
             "content": (
-                "Extract the following fields from this WaterlooWorks job posting as valid JSON.\n"
-                "Fields: job_id (string), job_title (string), company (string), work_term (string), "
-                "duration (string), location (string), compensation (string), "
-                "required_skills (array of strings), cover_letter_required (boolean), "
-                "cover_letter_instructions (string, empty string if none).\n"
-                "Return only the JSON object, no markdown, no extra text.\n\n"
-                f"Posting:\n{text}"
+                "Extract from this WaterlooWorks posting as JSON (no markdown):\n"
+                "job_id, job_title, company, work_term, duration, location, compensation, "
+                "required_skills (array), cover_letter_required (bool), "
+                "cover_letter_instructions (str, empty if none).\n\n"
+                f"{text}"
             )
         }]
     )
-    raw = resp.content[0].text.strip()
+    raw = first_text(resp)
     try:
         return json.loads(raw)
     except json.JSONDecodeError:
@@ -123,10 +131,6 @@ def reorder_projects(cv_tex, project_order, parsed_projects):
         if name.lower() not in seen:
             reordered.append(block)
 
-    marker_start = re.search(
-        r'%-+PROJECTS-+.*?\\resumeSubHeadingListStart',
-        cv_tex, re.DOTALL
-    )
     marker_end = re.search(
         r'(%-+PROJECTS-+.*?\\resumeSubHeadingListStart)(.*?)(\\resumeSubHeadingListEnd)',
         cv_tex, re.DOTALL
@@ -140,85 +144,31 @@ def reorder_projects(cv_tex, project_order, parsed_projects):
 
 def match_and_rank(client, job_data, skills, projects_context):
     skills_lines = "\n".join(
-        f"- [{row['level'].strip()}] {row['category']} / {row['skill']}: {row['evidence']}"
+        f"{row['skill']}|{row['level'].strip()}: {row['evidence']}"
         for row in skills
     )
     job_block = (
-        f"Title: {job_data['job_title']}\n"
-        f"Company: {job_data['company']}\n"
-        f"Required Skills: {', '.join(job_data['required_skills'])}\n"
+        f"Title: {job_data['job_title']} @ {job_data['company']}\n"
+        f"Skills required: {', '.join(job_data['required_skills'])}\n"
     )
     resp = client.messages.create(
         model=MODEL,
-        max_tokens=1536,
+        max_tokens=8192,
         messages=[{
             "role": "user",
             "content": (
-                "You are helping a University of Waterloo co-op student tailor their resume.\n\n"
-                "Job:\n" + job_block + "\n"
-                "Candidate skills ([level] category / skill: evidence):\n" + skills_lines + "\n\n"
-                "Candidate projects:\n" + projects_context + "\n\n"
-                "Return a single JSON object with two fields:\n"
-                "1. \"bullets\": array of 3-5 narrative HoQ strings. Rules:\n"
-                "   - Group related skills into single bullets ordered by relevance to the job.\n"
-                "   - Write as narrative sentences (Canadian co-op HoQ style): lead with experience "
-                "or skill phrase, optionally reference where developed (at most once or twice).\n"
-                "   - [familiar] skills only if job explicitly requires them; frame as 'familiarity with'.\n"
-                "   - Do not invent facts — use only the provided evidence.\n"
-                "2. \"project_order\": array of all project names ordered from most to least relevant "
-                "to this job. Include every project exactly once.\n"
-                "Return only the JSON object, no markdown, no extra text.\n"
-                'Example: {"bullets": ["Demonstrated ML experience..."], '
-                '"project_order": ["SlopFilter", "IMC Prosperity", "Origami Pattern Designer", '
-                '"Formalization of Elementary Number Theory", "Origametry"]}'
+                "Tailor a UWaterloo co-op resume. Return JSON only, no markdown.\n\n"
+                "JOB:\n" + job_block + "\n"
+                "SKILLS (skill|level: evidence):\n" + skills_lines + "\n\n"
+                "PROJECTS:\n" + projects_context + "\n\n"
+                "Return {\"bullets\": [...], \"project_order\": [...]} where:\n"
+                "- bullets: 3-5 narrative HoQ sentences, group related skills, order by relevance. "
+                "[familiar] skills only if job requires them, framed as 'familiarity with'. Facts only.\n"
+                "- project_order: all project names most→least relevant, each exactly once."
             )
         }]
     )
-    raw = resp.content[0].text.strip()
-    try:
-        return json.loads(raw)
-    except json.JSONDecodeError:
-        raw = raw.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
-        return json.loads(raw)
-
-
-def match_skills(client, job_data, skills):
-    skills_lines = "\n".join(
-        f"- [{row['level'].strip()}] {row['category']} / {row['skill']}: {row['evidence']}"
-        for row in skills
-    )
-    job_block = (
-        f"Title: {job_data['job_title']}\n"
-        f"Company: {job_data['company']}\n"
-        f"Required Skills: {', '.join(job_data['required_skills'])}\n"
-    )
-    resp = client.messages.create(
-        model=MODEL,
-        max_tokens=1024,
-        messages=[{
-            "role": "user",
-            "content": (
-                "You are helping a University of Waterloo co-op student write the "
-                "Highlights of Qualifications section of their resume.\n\n"
-                "Job:\n" + job_block + "\n"
-                "Candidate skills ([level] category / skill: evidence):\n" + skills_lines + "\n\n"
-                "Instructions:\n"
-                "1. Select and group related skills into 3-5 bullets ordered by relevance to this job.\n"
-                "2. Write each bullet as a narrative sentence following Canadian co-op HoQ conventions: "
-                "lead with an experience or skill phrase, optionally reference where it was developed "
-                "(at most once or twice across all bullets).\n"
-                "3. Skills marked [familiar] are only included if the job explicitly requires them; "
-                "frame them as 'familiarity with' or 'exposure to', never as 'experience in'.\n"
-                "4. Do not invent facts — only use the provided evidence.\n"
-                "5. Return a JSON array of strings, one string per bullet. No other text.\n"
-                'Example: ["Demonstrated machine learning experience developing PyTorch models and '
-                'ONNX inference pipelines through a browser extension project (SlopFilter).", '
-                '"Strong problem-solving and communication skills developed through 500+ hours of '
-                'contest math tutoring at AMC to Olympiad level."]'
-            )
-        }]
-    )
-    raw = resp.content[0].text.strip()
+    raw = first_text(resp)
     try:
         return json.loads(raw)
     except json.JSONDecodeError:
@@ -298,7 +248,7 @@ def generate_cover_letter(client, job_data, cv_tex, base_name):
     instructions = job_data.get("cover_letter_instructions", "")
     resp = client.messages.create(
         model=MODEL,
-        max_tokens=2048,
+        max_tokens=8192,
         messages=[{
             "role": "user",
             "content": (
@@ -316,7 +266,7 @@ def generate_cover_letter(client, job_data, cv_tex, base_name):
             )
         }]
     )
-    cl_tex = resp.content[0].text.strip()
+    cl_tex = first_text(resp)
     cl_tex = cl_tex.removeprefix("```latex").removeprefix("```").removesuffix("```").strip()
     cl_tex_path = TEX_DIR / f"{base_name}_CL.tex"
     cl_pdf_path = OUTPUT_DIR / f"{base_name}_CL.pdf"
@@ -331,7 +281,7 @@ def main():
     OUTPUT_DIR.mkdir(exist_ok=True)
     TEX_DIR.mkdir(exist_ok=True)
 
-    client = anthropic.Anthropic(api_key=os.environ["DEEPSEEK_API_KEY"], base_url=DEEPSEEK_BASE_URL)
+    client = anthropic.Anthropic(base_url=DEEPSEEK_BASE_URL)
 
     pdf_path = get_newest_pdf()
     print(f"Processing: {pdf_path.name}")
