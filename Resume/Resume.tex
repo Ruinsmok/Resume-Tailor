@@ -92,48 +92,39 @@
 \newcommand{\resumeItemListStart}{\begin{itemize}}
 \newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
 
-%-------------------------------------------
-%%%%%%  RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%-RESUME STARTS HERE  %%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \begin{document}
 
 %----------HEADING----------
-% \begin{tabular*}{\textwidth}{l@{\extracolsep{\fill}}r}
-%   \textbf{\href{http://sourabhbajaj.com/}{\Large Sourabh Bajaj}} & Email : \href{mailto:sourabh@sourabhbajaj.com}{sourabh@sourabhbajaj.com}\\
-%   \href{http://sourabhbajaj.com/}{http://www.sourabhbajaj.com} & Mobile : +1-123-456-7890 \\
-% \end{tabular*}
-
 \begin{center}
     \textbf{\Huge \scshape Ruiyang (Ryan) Ye} \\ \vspace{1pt}
     \small 368-299-5114 $|$ \href{mailto:r27ye@uwaterloo.ca}{\underline{r27ye@uwaterloo.ca}} $|$ \href{mailto:yeruiyang0511@gmail.com}{\underline{yeruiyang0511@gmail.com}} $|$ 
     \href{https://www.linkedin.com/in/ruiyang-ye-992b66298/}{\underline{Linkedin: Ruiyang Ye}}
 \end{center}
 
-
-%-------------------------------------------
-
 %-----------EDUCATION-----------
 \section{Education}
   \resumeSubHeadingListStart
     \resumeSubheading
       {University of Waterloo $|$ Cumulative Average: 92.90}{Sept. 2025 -- Apr. 2030 (Expected)}
-      {Bachelor of Mathematics in Combinatorics and Optimization, Pure Math, and Statistics}{Waterloo, ON}
+      {\footnotesize Bachelor of Mathematics in Combinatorics and Optimization, Pure Math, and Statistics}{Waterloo, ON}
   \resumeSubHeadingListEnd
 
 %-----------PROJECTS-----------
 \section{Projects}
     \resumeSubHeadingListStart
     \resumeProjectHeading
-          {\textbf{Resume Tailor} $|$ \emph{python, LLM API}} {May. 2026}
-          \resumeItemListStart
-            \resumeItem{An AI-powered personal tool to rearrange resume to pass through ATS and save time}
-            \resumeItem{Uses Anthropic API and }
-            \resumeItem{Also removes slop-like clickable containers with css}
-            \resumeItem{Link to Github repo: \href{}{Resume Tailor}}
-          \resumeItemListEnd
+      {\textbf{Resume Tailor} $|$ \emph{Python, DeepSeek API, pdfplumber, \LaTeX}} {May. 2026}
+      \resumeItemListStart
+        \resumeItem{Automated \LaTeX{} resume tailoring CLI for WaterlooWorks co-op postings}
+        \resumeItem{Extracts job data from PDF; LLM matches skills in preset csv and generates Highlights of Qualifications}
+        \resumeItem{Ranks projects by relevance, detects cover letter needs, and compiles to PDF}
+        \resumeItem{Link to Github repo: \href{https://github.com/Ruinsmok/Resume-Tailor}{Resume Tailor}}
+      \resumeItemListEnd
     \resumeProjectHeading
-          {\textbf{SlopFilter} $|$ \emph{JavaScript, html, python}} {May. 2026}
+          {\textbf{SlopFilter} $|$ \emph{JavaScript, html, python}} {Apr. 2026}
           \resumeItemListStart
             \resumeItem{A web browser extension that actively hides slop content according to user model}
             \resumeItem{Uses pyTorch to train for video cover and title slop detection, actively inferences video thumbnails with ONNX}
@@ -151,10 +142,10 @@
           \resumeItemListStart
             \resumeItem{Implemented an axiomatic integer algebra in Rocq, proving ring properties from minimal axioms}
             \resumeItem{Proven results include Euclidean division, Bézout's lemma, and Gauss's lemma}
-            \resumeItem{Completed $\mathbf{1582}$ lines of code, finishing with unique prime factorization in general rings.}
+            \resumeItem{Completed $1582$ lines of code, finishing with unique prime factorization in general rings.}
             \resumeItem{Link to Github repo: \href{https://github.com/Ruinsmok/Formalization-of-Elementary-Number-Theory}{Formalization-of-Elementary-Number-Theory}}
           \resumeItemListEnd
-      \resumeProjectHeading
+    \resumeProjectHeading
           {\textbf{Origametry} $|$ \emph{Abstract Algebra, Projective and Combinatorical Geometry, Analysis} } {Sep. 2025 -- Present}
           \resumeItemListStart
             \resumeItem{Studied structures and properties of origami as a formal mathematical system}
@@ -162,7 +153,7 @@
             \resumeItem{Combined hobby with rigorous mathematical proofs}
             \resumeItem{experience in modern mathematical methods of axiomatisation and generalization}
           \resumeItemListEnd
-      \resumeProjectHeading
+    \resumeProjectHeading
           {\textbf{Origami Pattern Designer} $|$ \emph{Java}}{Sep. 2024 -- Jan. 2025}
           \resumeItemListStart
             \resumeItem{Constructed data structure in symmetry to formal math system}
@@ -172,6 +163,7 @@
           \resumeItemListEnd
       
     \resumeSubHeadingListEnd
+
 %-----------EXPERIENCE-----------
 \section{Experience}
   \resumeSubHeadingListStart
@@ -193,6 +185,7 @@
         \resumeItem{Over 150 hours of participation and teaching.}
         \resumeItem{Improved mentee engagement with campus resources by compiling and sharing comprehensive guide.}
       \resumeItemListEnd
+
 %-----------AWARDS-----------
 \section{Awards}
   \resumeSubHeadingListStart
@@ -215,6 +208,8 @@
       {Canada Lynx Math Competition - Perfect Mark}{2025}
       {Top 7}{}
   \resumeSubHeadingListEnd
+  \resumeSubHeadingListEnd
+
 % -----------Multiple Positions Heading-----------
 %    \resumeSubSubheading
 %     {Software Engineer I}{Oct 2014 - Sep 2016}
@@ -225,13 +220,11 @@
 %    \resumeSubHeadingListEnd
 %-------------------------------------------
 
-  \resumeSubHeadingListEnd
-%
-%-----------PROGRAMMING SKILLS-----------
+%-----------TECHNICAL SKILLS-----------
 \section{Technical Skills}
  \begin{itemize}[leftmargin=0.15in, label={}]
     \small{\item{
-     \textbf{Languages}{: Rocq, Lean, Java, Javascript, Python, C, SQL, Haskell} \\
+     \textbf{Languages}{: Rocq, Lean, Java, Javascript, Python, C, HTML&CSS, SQL, Haskell} \\
      \textbf{Developer Tools}{: Git, VS Code, Excel, Microsoft Azure, Google Cloud Platform} \\
      \textbf{Libraries}{: pyTorch, pandas, NumPy, Matplotlib, ONNX}
     }}

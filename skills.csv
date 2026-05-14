@@ -4,8 +4,15 @@ Languages,C,"Extensive use in course CS146",proficient
 Languages,Java,"Origami Pattern Designer data structures",proficient
 Languages,JavaScript,"Browser extension dev (SlopFilter)",intermediate
 Languages,HTML&CSS,"Web content filter and extract (SlopFilter)",intermediate
-Frameworks,PyTorch,"trained slop detection model in SlopFilter",intermediate
-Frameworks,ONNX,"real-time video thumbnail inference in SlopFilter",basic
+Languages,Rocq,"Formalization of Elementary Number Theory",intermediate
+Languages,Lean,"type theory and Lean usage by interest",familiar
+Languages,SQL,"high school and Microsoft Learn",familiar
+Languages,Haskell,"CS146",basic
+Libraries,PyTorch,"trained slop detection model in SlopFilter",intermediate
+Libraries,ONNX,"real-time video thumbnail inference in SlopFilter",basic
+Libraries,pandas,"IMC Prosperity and other Python projects",proficient
+Libraries,NumPy,"IMC Prosperity and other Python projects",proficient
+Libraries,Matplotlib,"IMC Prosperity and other Python projects",proficient
 Concepts,Formal Proof,"Formalization of Elementary Number Theory",intermediate
 Concepts,Algorithm Design,"arbitrage, EMA, mean-reversion strategies", intermediate
 Platforms,Microsoft Azure,"self-study via Microsoft Learn and coursework",familiar

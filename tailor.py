@@ -23,7 +23,7 @@ def first_text(resp):
 OUTPUT_DIR = Path("output")
 TEX_DIR = Path("tex")
 SKILLS_CSV = Path("skills.csv")
-MASTER_CV = Path("CV.tex")
+MASTER_CV = Path("Resume/resume.tex")
 
 #do not change current model name or URL
 MODEL = "deepseek-v4-pro"
