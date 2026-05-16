@@ -10,6 +10,9 @@ from pathlib import Path
 
 import anthropic
 import pdfplumber
+from dotenv import load_dotenv
+
+load_dotenv()
 
 JOBS_DIR = Path("jobs")
 
@@ -316,8 +319,8 @@ def main():
     if not confirm("Looks good? [Y/n] "):
         sys.exit(0)
 
-    job_id = sanitize(job_data.get("job_id", "unknown"))
-    company = sanitize(job_data.get("company", "company").split()[0])
+    job_id = sanitize(job_data.get("job_id") or "unknown")
+    company = sanitize((job_data.get("company") or "company").split()[0])
     base_name = f"{job_id}_{company}"
 
     tailored = inject_hq_section(cv_tex, bullets)
