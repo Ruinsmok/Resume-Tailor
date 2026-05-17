@@ -12,6 +12,8 @@ import anthropic
 import pdfplumber
 from dotenv import load_dotenv
 
+from cover_letter import generate_cover_letter
+
 load_dotenv()
 
 JOBS_DIR = Path("jobs")
@@ -112,12 +114,7 @@ def build_projects_context(projects):
     for name, block in projects:
         tech_match = re.search(r'\\emph\{([^}]+)\}', block)
         tech = strip_latex(tech_match.group(1)) if tech_match else ""
-        bullets = re.findall(r'\\resumeItem\{((?:[^{}]|\{[^{}]*\})*)\}', block)
-        lines.append(f"Project: {name}")
-        if tech:
-            lines.append(f"  Tech: {tech}")
-        for b in bullets:
-            lines.append(f"  - {strip_latex(b)}")
+        lines.append(f"{name}: {tech}" if tech else name)
     return "\n".join(lines)
 
 
@@ -156,18 +153,19 @@ def match_and_rank(client, job_data, skills, projects_context):
     )
     resp = client.messages.create(
         model=MODEL,
-        max_tokens=8192,
+        max_tokens=3000,
         messages=[{
             "role": "user",
             "content": (
                 "Tailor a UWaterloo co-op resume. Return JSON only, no markdown.\n\n"
                 "JOB:\n" + job_block + "\n"
                 "SKILLS (skill|level: evidence):\n" + skills_lines + "\n\n"
-                "PROJECTS:\n" + projects_context + "\n\n"
+                "PROJECTS (name: tech stack):\n" + projects_context + "\n\n"
                 "Return {\"bullets\": [...], \"project_order\": [...]} where:\n"
-                "- bullets: 3-5 narrative HoQ sentences, group related skills, order by relevance. "
+                "- bullets: 3-5 narrative HoQ sentences using SKILLS evidence above. "
+                "Group related skills, order by relevance. "
                 "[familiar] skills only if job requires them, framed as 'familiarity with'. Facts only.\n"
-                "- project_order: all project names most→least relevant, each exactly once."
+                "- project_order: rank PROJECTS by tech relevance to job, most→least, each exactly once."
             )
         }]
     )
@@ -246,38 +244,6 @@ def compile_latex(tex_path, out_pdf):
         print("pdflatex failed. Last output:\n" + r.stdout[-3000:])
         return False
 
-
-def generate_cover_letter(client, job_data, cv_tex, base_name):
-    instructions = job_data.get("cover_letter_instructions", "")
-    resp = client.messages.create(
-        model=MODEL,
-        max_tokens=8192,
-        messages=[{
-            "role": "user",
-            "content": (
-                "Write a one-page cover letter in LaTeX for a University of Waterloo co-op student "
-                "applying to the following role.\n\n"
-                f"Job: {job_data['job_title']} at {job_data['company']}\n"
-                f"Term: {job_data['work_term']}, {job_data['duration']}, {job_data['location']}\n"
-                f"Required skills: {', '.join(job_data['required_skills'])}\n"
-                + (f"Specific instructions: {instructions}\n" if instructions else "")
-                + "\nCandidate CV (for context on background and projects):\n"
-                + cv_tex[:3000] + "\n\n"
-                "Return a complete compilable LaTeX document using \\documentclass[letterpaper,11pt]{letter}. "
-                "Address it to 'Hiring Manager'. Sign off as Ruiyang (Ryan) Ye. "
-                "Return only the LaTeX source, no markdown fences."
-            )
-        }]
-    )
-    cl_tex = first_text(resp)
-    cl_tex = cl_tex.removeprefix("```latex").removeprefix("```").removesuffix("```").strip()
-    cl_tex_path = TEX_DIR / f"{base_name}_CL.tex"
-    cl_pdf_path = OUTPUT_DIR / f"{base_name}_CL.pdf"
-    cl_tex_path.write_text(cl_tex, encoding="utf-8")
-    if compile_latex(cl_tex_path, cl_pdf_path):
-        print(f"Cover letter: {cl_pdf_path}")
-    else:
-        print(f"Cover letter LaTeX saved (compile failed): {cl_tex_path}")
 
 
 def main():
