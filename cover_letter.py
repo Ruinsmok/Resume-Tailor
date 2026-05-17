@@ -79,31 +79,35 @@ def extract_job_data(client, text):
         return json.loads(raw)
 
 
+TEMPLATE_PATH = Path("cover_letter_template.tex")
+
+
 def generate_cover_letter(client, job_data, cv_tex, base_name, note=""):
     instructions = job_data.get("cover_letter_instructions", "")
     resp = client.messages.create(
         model=MODEL,
-        max_tokens=8192,
+        max_tokens=4096,
         messages=[{
             "role": "user",
             "content": (
-                "Write a one-page cover letter in LaTeX for a University of Waterloo co-op student "
-                "applying to the following role.\n\n"
+                "Write the body of a cover letter (2-3 paragraphs, plain text only, no LaTeX commands) "
+                "for a University of Waterloo co-op student applying to the following role.\n\n"
                 f"Job: {job_data['job_title']} at {job_data['company']}\n"
                 f"Term: {job_data['work_term']}, {job_data['duration']}, {job_data['location']}\n"
                 f"Required skills: {', '.join(job_data['required_skills'])}\n"
                 + (f"Specific instructions: {instructions}\n" if instructions else "")
-                + (f"Additional context to address in the letter: {note}\n" if note else "")
-                + "\nCandidate CV (for context on background and projects):\n"
-                + cv_tex[:3000] + "\n\n"
-                "Return a complete compilable LaTeX document using \\documentclass[letterpaper,11pt]{letter}. "
-                "Address it to 'Hiring Manager'. Sign off as Ruiyang (Ryan) Ye. "
-                "Return only the LaTeX source, no markdown fences."
+                + (f"Additional context to address: {note}\n" if note else "")
+                + "\nCandidate CV:\n" + cv_tex[:3000] + "\n\n"
+                "Return only the paragraphs, separated by blank lines. No salutation, no sign-off."
             )
         }]
     )
-    cl_tex = first_text(resp)
-    cl_tex = cl_tex.removeprefix("```latex").removeprefix("```").removesuffix("```").strip()
+    body = first_text(resp).strip()
+
+    template = TEMPLATE_PATH.read_text(encoding="utf-8")
+    cl_tex = template.replace("<<COMPANY>>", job_data.get("company", ""))
+    cl_tex = cl_tex.replace("<<BODY>>", body + "\n\n")
+
     cl_tex_path = TEX_DIR / f"{base_name}_CL.tex"
     cl_pdf_path = OUTPUT_DIR / f"{base_name}_CL.pdf"
     cl_tex_path.write_text(cl_tex, encoding="utf-8")
@@ -113,10 +117,10 @@ def generate_cover_letter(client, job_data, cv_tex, base_name, note=""):
         print(f"Cover letter LaTeX saved (compile failed): {cl_tex_path}")
 
 
-def get_ascendance_pdf():
-    matches = list(JOBS_DIR.glob("Ascendance*"))
+def get_newest_job_pdf():
+    matches = list(JOBS_DIR.glob("*.pdf"))
     if not matches:
-        print("No Ascendance Fellow PDF found in jobs/.")
+        print("No PDF found in jobs/.")
         sys.exit(1)
     return sorted(matches, key=lambda p: p.stat().st_mtime, reverse=True)[0]
 
@@ -131,7 +135,7 @@ def main():
 
     client = anthropic.Anthropic(base_url=DEEPSEEK_BASE_URL)
 
-    pdf_path = get_ascendance_pdf()
+    pdf_path = get_newest_job_pdf()
     print(f"Processing: {pdf_path.name}")
     text = extract_pdf_text(pdf_path)
 
