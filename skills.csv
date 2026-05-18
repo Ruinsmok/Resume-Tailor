@@ -1,6 +1,7 @@
 category,skill,evidence,level
 Languages,Python,"algorithmic trading (IMC Prosperity), ML inference (SlopFilter)",proficient
 Languages,C,"Extensive use in course CS146",proficient
+Languages,Latex,"Extensive use in all math courses and personal notes",advanced
 Languages,Java,"Origami Pattern Designer data structures",proficient
 Languages,JavaScript,"Browser extension dev (SlopFilter)",intermediate
 Languages,HTML&CSS,"Web content filter and extract (SlopFilter)",intermediate
@@ -25,4 +26,3 @@ Communication,French,"daily usage level",intermediate
 Communication,Teamworking,"Group project (IMC Prosperity)",proficient
 Communication,Teaching,"Tutoring and Peer Mentor",advanced
 Communication,Interpersonal Communication,"Group project (IMC Prosperity), Tutoring and Peer Mentor",proficient
-
